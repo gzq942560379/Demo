@@ -10,10 +10,14 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <complex>
 
 #include <omp.h>
 #include <cublas.h>
 #include <cublas_v2.h>
+
+// typedef std::complex<double> Complex;
+typedef cuDoubleComplex Complex;
 
 #ifndef DEVICE_RESET
 #define DEVICE_RESET cudaDeviceReset();
@@ -52,35 +56,38 @@ void _checkCublasStatus(T result, char const *const func, const char *const file
 
 using namespace std;
 
-void initialize_a_b_c(double* ha,
+void initialize_a_b_c(Complex* ha,
 					int size_a,
-					double* hb,
+					Complex* hb,
 					int size_b,
-					double* hc,
+					Complex* hc,
 					int size_c)
 {
 	for (int i = 0; i < size_a; ++i)
 	{
-		ha[i] = 1.;
+		ha[i].x = 1.;
+		ha[i].y = 0.;
 	}
 	for (int i = 0; i < size_b; ++i)
 	{
-		hb[i] = 1.0;
+		hb[i].x = 1.;
+		hb[i].y = 0.;
 	}
 	for (int i = 0; i < size_c; ++i)
 	{
-		hc[i] = 1.0;
+		hc[i].x = 1.;
+		hc[i].y = 0.;
 	}
 }
 
-double call_cu_dgemm(char transA, char transB, int m, int n, int k, double alpha, double *A,int lda, double* B, int ldb, double beta, double* C, int ldc){
-	double *da, *db, *dc;
-	checkCudaError(cudaMalloc(&da, m * k * sizeof(double)));
-	checkCudaError(cudaMalloc(&db, k * n * sizeof(double)));
-	checkCudaError(cudaMalloc(&dc, m * n * sizeof(double)));
-	checkCudaError(cudaMemcpy(da, A, sizeof(double) * m * k, cudaMemcpyHostToDevice));
-	checkCudaError(cudaMemcpy(db, B, sizeof(double) * k * n, cudaMemcpyHostToDevice));
-	checkCudaError(cudaMemcpy(dc, C, sizeof(double) * m * n, cudaMemcpyHostToDevice));
+double call_cu_dgemm(char transA, char transB, int m, int n, int k, Complex alpha, Complex *A,int lda, Complex* B, int ldb, Complex beta, Complex* C, int ldc){
+	Complex *da, *db, *dc;
+	checkCudaError(cudaMalloc(&da, m * k * sizeof(Complex)));
+	checkCudaError(cudaMalloc(&db, k * n * sizeof(Complex)));
+	checkCudaError(cudaMalloc(&dc, m * n * sizeof(Complex)));
+	checkCudaError(cudaMemcpy(da, A, sizeof(Complex) * m * k, cudaMemcpyHostToDevice));
+	checkCudaError(cudaMemcpy(db, B, sizeof(Complex) * k * n, cudaMemcpyHostToDevice));
+	checkCudaError(cudaMemcpy(dc, C, sizeof(Complex) * m * n, cudaMemcpyHostToDevice));
 	
 	float cuda_elapsed;
 	cudaEvent_t start_gemm, end_gemm;
@@ -92,7 +99,7 @@ double call_cu_dgemm(char transA, char transB, int m, int n, int k, double alpha
 
 	checkCudaError(cudaEventRecord(start_gemm, NULL));
 
-	checkCublasStatus(cublasDgemm(handle, cublasOperation_t::CUBLAS_OP_N, cublasOperation_t::CUBLAS_OP_N, m, n, k, &alpha, da, lda, db, ldb, &beta, dc, ldc));
+	checkCublasStatus(cublasZgemm(handle, cublasOperation_t::CUBLAS_OP_N, cublasOperation_t::CUBLAS_OP_N, m, n, k, &alpha, da, lda, db, ldb, &beta, dc, ldc));
 
 	checkCudaError(cudaEventRecord(end_gemm, NULL));
 
@@ -100,7 +107,7 @@ double call_cu_dgemm(char transA, char transB, int m, int n, int k, double alpha
 	
   checkCudaError(cudaEventElapsedTime(&cuda_elapsed, start_gemm, end_gemm));
 
-	checkCudaError(cudaMemcpy(C, dc, sizeof(double) * m * n, cudaMemcpyDeviceToHost));
+	checkCudaError(cudaMemcpy(C, dc, sizeof(Complex) * m * n, cudaMemcpyDeviceToHost));
 	
   checkCudaError(cudaEventDestroy(start_gemm));
   checkCudaError(cudaEventDestroy(end_gemm));
@@ -114,10 +121,12 @@ double call_cu_dgemm(char transA, char transB, int m, int n, int k, double alpha
 void cuda_dgemm_performance_test(int m,int n, int k){
 	int M,N,K;
   int lda,ldb,ldc;
-  double alpha,beta;
-  alpha = 1.;
-  beta = 1.;
-  double *A,*B,*C;
+  Complex alpha,beta;
+  alpha.x = 1.;
+  alpha.y = 0.;
+  beta.x = 1.;
+  beta.y = 0.;
+  Complex *A,*B,*C;
   char transA = 'N';
   char transB = 'N';
   M = m;
@@ -126,9 +135,9 @@ void cuda_dgemm_performance_test(int m,int n, int k){
   lda = M;
   ldb = K;
   ldc = M;
-  A = (double*)malloc(M * K * sizeof(double));
-  B = (double*)malloc(K * N * sizeof(double));
-  C = (double*)malloc(M * N * sizeof(double));
+  A = (Complex*)malloc(M * K * sizeof(Complex));
+  B = (Complex*)malloc(K * N * sizeof(Complex));
+  C = (Complex*)malloc(M * N * sizeof(Complex));
 
 	int size_a = m * k;
 	int size_b = k * n;
