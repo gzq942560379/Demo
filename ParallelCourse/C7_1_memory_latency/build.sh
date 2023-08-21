@@ -3,17 +3,19 @@
 module load compiler/2022.0.2
 
 CC="icc"
-CFLAGS="-O1 -g -std=c11 -fopenmp"
+CFLAGS="-O1 -std=c11 -fopenmp"
 
 set -ex
 
-$CC $CFLAGS mem.c -o mem
-$CC $CFLAGS -DDEF_CHAIN_COUNT=1 mem_multichain.c -o mem_multichain_1
-$CC $CFLAGS -DDEF_CHAIN_COUNT=2 mem_multichain.c -o mem_multichain_2
-$CC $CFLAGS -DDEF_CHAIN_COUNT=4 mem_multichain.c -o mem_multichain_4
-$CC $CFLAGS -DDEF_CHAIN_COUNT=6 mem_multichain.c -o mem_multichain_6
-$CC $CFLAGS -DDEF_CHAIN_COUNT=8 mem_multichain.c -o mem_multichain_8
-$CC $CFLAGS -DDEF_CHAIN_COUNT=10 mem_multichain.c -o mem_multichain_10
-$CC $CFLAGS -DDEF_CHAIN_COUNT=12 mem_multichain.c -o mem_multichain_12
-$CC $CFLAGS -DDEF_CHAIN_COUNT=14 mem_multichain.c -o mem_multichain_14
-$CC $CFLAGS -DDEF_CHAIN_COUNT=16 mem_multichain.c -o mem_multichain_16
+$CC $CFLAGS -DDEF_CHAIN_COUNT=1  -DDEF_GEN_RANDOM_ACCESS_LIST mem.c -o ./bin/mem
+$CC $CFLAGS -DDEF_CHAIN_COUNT=2  -DDEF_GEN_RANDOM_ACCESS_LIST mem.c -o ./bin/mem_chain2
+$CC $CFLAGS -DDEF_CHAIN_COUNT=4  -DDEF_GEN_RANDOM_ACCESS_LIST mem.c -o ./bin/mem_chain4
+$CC $CFLAGS -DDEF_CHAIN_COUNT=6  -DDEF_GEN_RANDOM_ACCESS_LIST mem.c -o ./bin/mem_chain6
+$CC $CFLAGS -DDEF_CHAIN_COUNT=8  -DDEF_GEN_RANDOM_ACCESS_LIST mem.c -o ./bin/mem_chain8
+$CC $CFLAGS -DDEF_CHAIN_COUNT=10 -DDEF_GEN_RANDOM_ACCESS_LIST mem.c -o ./bin/mem_chain10
+$CC $CFLAGS -DDEF_CHAIN_COUNT=12 -DDEF_GEN_RANDOM_ACCESS_LIST mem.c -o ./bin/mem_chain12
+$CC $CFLAGS -DDEF_CHAIN_COUNT=14 -DDEF_GEN_RANDOM_ACCESS_LIST mem.c -o ./bin/mem_chain14
+$CC $CFLAGS -DDEF_CHAIN_COUNT=16 -DDEF_GEN_RANDOM_ACCESS_LIST mem.c -o ./bin/mem_chain16
+
+$CC $CFLAGS -DDEF_CHAIN_COUNT=1 -DDEF_GEN_SEQUENTIAL_ACCESS_LIST mem.c -o ./bin/mem_sequential
+

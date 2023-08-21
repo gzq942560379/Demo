@@ -1,5 +1,5 @@
 set term pngcairo font "Times-New-Roman,20" size 800,600
-set output "latency_local_remote.png"
+set output "./png/latency_local_remote.png"
 
 set xlabel "size of region (bytes)"
 set ylabel "latency per load (CPU cycles)"
@@ -12,5 +12,5 @@ set format x "10^{%L}"
 set key left
 
 plot \
-'./latency_local.dat' lw 1 with linespoints title "local", \
-'./latency_remote.dat' lw 1 with linespoints title "remote"
+'./data/latency_local.dat' lw 1 with linespoints title "local", \
+'./data/latency_remote.dat' lw 1 with linespoints title "remote"
