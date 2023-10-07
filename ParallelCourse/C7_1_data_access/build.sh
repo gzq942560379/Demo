@@ -3,7 +3,8 @@
 source ./env.sh
 
 CC="icc"
-CFLAGS="-O1 -std=c11 -march=icelake-server"
+CFLAGS="-O2 -std=c11"
+# CFLAGS="-O1 -std=c11 -march=cascadelake"
 
 set -ex
 
@@ -39,11 +40,7 @@ $CC $CFLAGS -DVECTOR_TRIADS_MODEL triads.c -o ./bin/triads_model
 
 $CC $CFLAGS -DDMVM_NAIVE dmvm.c -o ./bin/dmvm_naive
 $CC $CFLAGS -DDMVM_UNROLL2 dmvm.c -o ./bin/dmvm_unroll2
-$CC $CFLAGS -DDMVM_TILING -DROW_TILING=100 dmvm.c -o ./bin/dmvm_tiling100
-$CC $CFLAGS -DDMVM_TILING -DROW_TILING=1000 dmvm.c -o ./bin/dmvm_tiling1000
-$CC $CFLAGS -DDMVM_TILING -DROW_TILING=10000 dmvm.c -o ./bin/dmvm_tiling10000
 $CC $CFLAGS -DDMVM_TILING dmvm.c -o ./bin/dmvm_tiling
-$CC $CFLAGS -DDMVM_AVX512 dmvm.c -o ./bin/dmvm_avx512
-$CC $CFLAGS -DDMVM_AVX512_UNROLL2 dmvm.c -o ./bin/dmvm_avx512_unroll2
-$CC $CFLAGS -DDMVM_AVX512_UNROLL4 dmvm.c -o ./bin/dmvm_avx512_unroll4
-$CC $CFLAGS -DDMVM_DATA_TRAFFIC dmvm.c -o ./bin/dmvm_data_traffic
+$CC $CFLAGS -DDMVM_DATA_TRAFFIC_NAIVE dmvm.c -o ./bin/dmvm_data_traffic_naive
+$CC $CFLAGS -DDMVM_DATA_TRAFFIC_UNROLL2 dmvm.c -o ./bin/dmvm_data_traffic_unroll2
+$CC $CFLAGS -DDMVM_DATA_TRAFFIC_TILING dmvm.c -o ./bin/dmvm_data_traffic_tiling

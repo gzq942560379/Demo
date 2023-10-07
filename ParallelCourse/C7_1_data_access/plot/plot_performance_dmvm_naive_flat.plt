@@ -1,4 +1,4 @@
-set term pngcairo font "Times-New-Roman,20" size 1000,400
+set term pngcairo font "Times-New-Roman,20" size 1200,400
 set output "./png/performance_dmvm_naive_flat.png"
 
 set xlabel "R"

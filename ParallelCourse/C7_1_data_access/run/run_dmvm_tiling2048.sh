@@ -10,7 +10,7 @@ source ./env.sh
 
 ./build.sh
 
-export LATENCY_OUTPUT_FILENAME_PREFIX="dmvm_mflops_tiling2000"
-export ROW_TILING=2000
+export LATENCY_OUTPUT_FILENAME_PREFIX="dmvm_mflops_tiling2048"
+export ROW_TILING=2048
 
 numactl -N 0 -m 0 ./bin/dmvm_tiling
