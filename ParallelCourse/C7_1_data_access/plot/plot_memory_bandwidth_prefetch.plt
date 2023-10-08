@@ -1,5 +1,5 @@
 set term pngcairo font "Times-New-Roman,20" size 800,600
-set output "./png/menory_bandwidth_prefetch.png"
+set output "./png/memory_bandwidth_prefetch.png"
 
 set xlabel "size of region (bytes)"
 set ylabel "bandwidth (GB/sec)"
