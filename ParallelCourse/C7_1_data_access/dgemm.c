@@ -1,6 +1,5 @@
 #include "util.h"
 
-#include <immintrin.h>
 #include <papi.h>
 
 void check_(int ret, const char * fun) {

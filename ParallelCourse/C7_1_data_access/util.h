@@ -12,6 +12,7 @@
 #include <omp.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <immintrin.h>
 
 #define L1_CACHE_SIZE (48 * 1024)
 #define L2_CACHE_SIZE (1280 * 1024)
