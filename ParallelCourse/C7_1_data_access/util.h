@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
+#include <math.h>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -18,6 +19,8 @@
 
 #define min(x, y) ((x) < (y) ? (x) : (y))
 #define max(x, y) ((x) < (y) ? (y) : (x))
+
+#define max3(x , y, z) (max(max(x, y),z))
 
 inline double dtime(){
     struct timeval t;
