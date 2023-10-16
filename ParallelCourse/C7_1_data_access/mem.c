@@ -21,7 +21,7 @@ void data_access_test(
 
 #ifdef DEF_PTRCHASE
 
-    memory_test_kernel_ptrchase_multichain(node_list_list, index_region, access_count, repeat_count, chains, cycle_file);
+    memory_test_kernel_ptrchase_multichain(node_list_list, index_region, repeat_count, chains, cycle_file);
 
 #else
 
@@ -42,14 +42,14 @@ void data_access_test(
 int main(){
 
     uint64_t sample_points = env_get_uint64("SAMPLE_POINTS", 4);         
-    uint64_t access_region_start = env_get_uint64("ACCESS_REGION_START", 1024);  // bytes >= 256
+    uint64_t access_region_start = env_get_uint64("ACCESS_REGION_START", 256);  // bytes >= 256
     uint64_t access_region_end = env_get_uint64("ACCESS_REGION_END", 1073741824);  // bytes
     uint64_t prefetch_count = env_get_uint64("PREFETCH_COUNT", 0);  // bytes
     
-    uint64_t access_count = env_get_uint64("ACCESS_COUNT", access_region_end);  // data accessed larger than L3 cache size
+    uint64_t access_count = env_get_uint64("ACCESS_COUNT", access_region_end * 2);  // data accessed larger than L3 cache size
 
     const char* latency_output_filename_dir = env_get_string("LATENCY_OUTPUT_FILENAME_DIR", "./data/"); 
-    const char* latency_output_filename_prefix = env_get_string("LATENCY_OUTPUT_FILENAME_PREFIX", "cycle"); 
+    const char* latency_output_filename_prefix = env_get_string("LATENCY_OUTPUT_FILENAME_PREFIX", "mem"); 
     const char* latency_output_filename_suffix = env_get_string("LATENCY_OUTPUT_FILENAME_SUFFIX", ".dat"); 
 
 #ifndef DEF_CHAIN_COUNT

@@ -169,10 +169,10 @@ static void release_node_list_multichain(Node_t** node_list_list, uint64_t chain
 
 #define DEFINE_CHAIN(x) \
     Node_t* node_list_##x = node_list_list[x];\
-    Node_t* pre_ptr_##x = &node_list_##x[x];
+    Node_t* pre_ptr_##x = &node_list_##x[0];
 
 #define RESET_CHAIN(x) \
-    pre_ptr_##x = &node_list_##x[x];
+    pre_ptr_##x = &node_list_##x[0];
 
 #ifndef DEF_PREFETCH
 #define ACCESS_CHAIN(x) \
@@ -443,14 +443,12 @@ static void release_node_list_multichain(Node_t** node_list_list, uint64_t chain
 uint64_t memory_test_kernel_ptrchase_multichain(
     Node_t** node_list_list,
     uint64_t index_region,
-    uint64_t access_count,
     uint64_t repeat_count,
     uint64_t chains,
     FILE* cycle_file
 ){
     printf("In memory_test_kernel_ptrchase_multichain\n");
     printf("index_region : %ld\n", index_region);
-    printf("access_count : %ld\n", access_count);
     printf("repeat_count : %ld\n", repeat_count);
     printf("chains : %ld\n", chains);
     fflush(stdout);
@@ -512,7 +510,7 @@ uint64_t memory_test_kernel_ptrchase_multichain(
         DEFINE_CHAIN_13;
         DEFINE_CHAIN_14;
         DEFINE_CHAIN_15;
-        for(uint64_t i = 0; i < access_count; ++i){
+        for(uint64_t i = 0; i < index_region; ++i){
             ACCESS_CHAIN_0;
             ACCESS_CHAIN_1;
             ACCESS_CHAIN_2;
@@ -535,23 +533,23 @@ uint64_t memory_test_kernel_ptrchase_multichain(
         uint64_t cycle_start = rdtsc();
 
         for(int i = 0; i < repeat_count; i++){
-            RESET_CHAIN_0;
-            RESET_CHAIN_1;
-            RESET_CHAIN_2;
-            RESET_CHAIN_3;
-            RESET_CHAIN_4;
-            RESET_CHAIN_5;
-            RESET_CHAIN_6;
-            RESET_CHAIN_7;
-            RESET_CHAIN_8;
-            RESET_CHAIN_9;
-            RESET_CHAIN_10;
-            RESET_CHAIN_11;
-            RESET_CHAIN_12;
-            RESET_CHAIN_13;
-            RESET_CHAIN_14;
-            RESET_CHAIN_15;
-            for(uint64_t i = 0; i < access_count; ++i){
+            // RESET_CHAIN_0;
+            // RESET_CHAIN_1;
+            // RESET_CHAIN_2;
+            // RESET_CHAIN_3;
+            // RESET_CHAIN_4;
+            // RESET_CHAIN_5;
+            // RESET_CHAIN_6;
+            // RESET_CHAIN_7;
+            // RESET_CHAIN_8;
+            // RESET_CHAIN_9;
+            // RESET_CHAIN_10;
+            // RESET_CHAIN_11;
+            // RESET_CHAIN_12;
+            // RESET_CHAIN_13;
+            // RESET_CHAIN_14;
+            // RESET_CHAIN_15;
+            for(uint64_t i = 0; i < index_region; ++i){
                 ACCESS_CHAIN_0;
                 ACCESS_CHAIN_1;
                 ACCESS_CHAIN_2;
@@ -616,11 +614,11 @@ uint64_t memory_test_kernel_ptrchase_multichain(
     uint64_t avg_cycles = total_cycles / thread_count;
     double avg_time = total_time / thread_count;
 
-    double cycles = avg_cycles * 1.0 / access_count / repeat_count / thread_count / chains;
+    double cycles = avg_cycles * 1.0 / index_region / repeat_count / thread_count / chains;
 
     uint64_t access_region = index_region * sizeof(Node_t);
 
-    double GBPS1 = 1.0 * thread_count * repeat_count * chains * access_count * sizeof(Node_t) / 1024./ 1024./ 1024./ avg_time;
+    double GBPS1 = 1.0 * thread_count * repeat_count * chains * index_region * sizeof(Node_t) / 1024./ 1024./ 1024./ avg_time;
     double GBPS2 = 64.0 / cycles * FREQUENCY_GHZ * 1e9 / 1024./1024./1024.;
 
     printf("avg_cycles : %ld\n", avg_cycles);
@@ -665,7 +663,14 @@ uint64_t memory_test_kernel_seqential_without_ptrchase(
     uint64_t repeat_count,
     FILE* cycle_file
 ){
-
+    access_region = access_region / 256 * 256;
+    index_region = index_region / 4 * 4;
+    printf("In memory_test_kernel_seqential_without_ptrchase\n");
+    printf("access_region : %ld\n", access_region);
+    printf("index_region : %ld\n", index_region);
+    printf("repeat_count : %ld\n", repeat_count);
+    fflush(stdout);
+    assert(access_region % 256 == 0);
     uint64_t global_sum = 0;
 
 #ifdef _OPENMP
@@ -784,6 +789,16 @@ uint64_t memory_test_kernel_random_without_ptrchase(
     uint64_t repeat_count,
     FILE* cycle_file
 ){
+    access_region = access_region / 256 * 256;
+    index_region = index_region / 4 * 4;
+    assert(access_region % 256 == 0);
+    assert(index_region % 4 == 0);
+
+    printf("In memory_test_kernel_random_without_ptrchase\n");
+    printf("access_region : %ld\n", access_region);
+    printf("index_region : %ld\n", index_region);
+    printf("repeat_count : %ld\n", repeat_count);
+    fflush(stdout);
 
     uint64_t global_sum = 0;
 #ifdef _OPENMP
