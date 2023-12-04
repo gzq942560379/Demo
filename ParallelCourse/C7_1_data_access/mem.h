@@ -22,12 +22,85 @@ typedef struct {
     char padding[CACHE_LINE_SIZE - 2 * sizeof(pointer)];
 } Node_t;
 
+uint64_t ptr_list_cycle_detect(uint64_t* ptr, uint64_t index_region){
+    bool* access = aligned_alloc(64, sizeof(bool) * index_region);
+    for(uint64_t i = 0; i < index_region; ++i){
+        access[i] = false;
+    }
+    uint64_t pre_idx = 0;
+    uint64_t cycle_start = 0;
+    for(uint64_t i = 0; i < index_region + 1; ++i){
+        if(access[pre_idx]){
+            cycle_start = pre_idx;
+            // printf("cycle start : %ld\n", cycle_start);
+            break;
+        }else{
+            access[pre_idx] = true;
+            pre_idx = ptr[pre_idx];
+        }
+    }
+    for(uint64_t i = 0; i < index_region; ++i){
+        access[i] = false;
+    }
+    uint64_t cycle_size = 0;
+    pre_idx = cycle_start;
+    while(true){
+        if(access[pre_idx]){
+            // printf("cycle size : %ld\n", cycle_size);
+            break;
+        }else{
+            access[pre_idx] = true;
+            cycle_size += 1;
+            pre_idx = ptr[pre_idx];
+        }
+    }
+    free(access);
+    return cycle_size;
+}
+
+uint64_t node_list_cycle_detect(Node_t* node_list, uint64_t index_region){
+    bool* access = aligned_alloc(64, sizeof(bool) * index_region);
+    for(uint64_t i = 0; i < index_region; ++i){
+        access[i] = false;
+    }
+    Node_t* pre_ptr = node_list;
+    Node_t* cycle_start = 0;
+    for(uint64_t i = 0; i < index_region + 1; ++i){
+        uint64_t pre_idx = ((uint64_t)pre_ptr - (uint64_t)node_list) / sizeof(Node_t); 
+        if(access[pre_idx]){
+            // printf("cycle start : %ld\n", pre_idx);
+            cycle_start = pre_ptr;
+            break;
+        }else{
+            access[pre_idx] = true;
+            pre_ptr = (Node_t*)pre_ptr->next;
+        }
+    }
+    for(uint64_t i = 0; i < index_region; ++i){
+        access[i] = false;
+    }
+    uint64_t cycle_size = 0;
+    pre_ptr = cycle_start;
+    while(true){
+        uint64_t pre_idx = ((uint64_t)pre_ptr - (uint64_t)node_list) / sizeof(Node_t); 
+        if(access[pre_idx]){
+            // printf("cycle size : %ld\n", cycle_size);
+            break;
+        }else{
+            access[pre_idx] = true;
+            cycle_size += 1;
+            pre_ptr = (Node_t*)pre_ptr->next;
+        }
+    }
+    free(access);
+    return cycle_size;
+}
+
 static void gen_random_list(uint64_t** ptr_p, uint64_t index_region){
     printf("index_region : %ld\n", index_region);
     fflush(stdout);
     *ptr_p = aligned_alloc(64, sizeof(uint64_t) * index_region);
     uint64_t* ptr = *ptr_p;
-    bool* access = aligned_alloc(64, sizeof(bool) * index_region);
     srand(index_region);
     for(uint64_t i = 0; i < index_region; ++i){
         ptr[i] = i;
@@ -39,52 +112,54 @@ static void gen_random_list(uint64_t** ptr_p, uint64_t index_region){
         ptr[i] = ptr[target];
         ptr[target] = tmp;
     }
-    // let cycle_size == index_region
-    uint64_t cycle_size = 0;
-    uint64_t gen_count = -1;
-    // while(cycle_size < (uint64_t)(index_region * 0.9)){
-    while(cycle_size != index_region){
-        gen_count += 1;
-        for(uint64_t i = 0; i < index_region; ++i){
-            access[i] = false;
-        }
-        uint64_t pre_idx = 0;
-        for(cycle_size = 0; cycle_size < index_region; ++cycle_size){
-            if(access[pre_idx]){
-                // 找一个没有被访问过的值与ptr[pre_idx]交换位置
-                uint64_t non_access_count = 0;
-                for(uint64_t i = 0; i < index_region; ++i){
-                    if(access[i] == false){
-                        non_access_count += 1;
-                    }
-                }
-                uint64_t target_in_non_access = rand() % non_access_count;
-                uint64_t target = -1;
-                uint64_t non_access_index = 0;
-                for(uint64_t i = 0; i < index_region; ++i){
-                    if(access[i] == false){
-                        if(non_access_index == target_in_non_access){
-                            target = i;
-                            break;
-                        }
-                        non_access_index += 1;
-                    }
-                }
-                uint64_t tmp = ptr[pre_idx];
-                ptr[pre_idx] = ptr[target];
-                ptr[target] = tmp;
-                break;
-            }else{
-                access[pre_idx] = true;
-                pre_idx = ptr[pre_idx];
-            }
-        }
-        printf("cycle_size : %ld\n", cycle_size);
-        fflush(stdout);
-    }
-    free(access);
-    printf("gen count : %ld\n", gen_count);
-    fflush(stdout);
+    
+    // // let cycle size == index_region
+    // bool* access = aligned_alloc(64, sizeof(bool) * index_region);
+    // uint64_t cycle_size = 0;
+    // uint64_t gen_count = -1;
+    // // while(cycle_size < (uint64_t)(index_region * 0.9)){
+    // while(cycle_size != index_region){
+    //     gen_count += 1;
+    //     for(uint64_t i = 0; i < index_region; ++i){
+    //         access[i] = false;
+    //     }
+    //     uint64_t pre_idx = 0;
+    //     for(cycle_size = 0; cycle_size < index_region; ++cycle_size){
+    //         if(access[pre_idx]){
+    //             // 找一个没有被访问过的值与ptr[pre_idx]交换位置
+    //             uint64_t non_access_count = 0;
+    //             for(uint64_t i = 0; i < index_region; ++i){
+    //                 if(access[i] == false){
+    //                     non_access_count += 1;
+    //                 }
+    //             }
+    //             uint64_t target_in_non_access = rand() % non_access_count;
+    //             uint64_t target = -1;
+    //             uint64_t non_access_index = 0;
+    //             for(uint64_t i = 0; i < index_region; ++i){
+    //                 if(access[i] == false){
+    //                     if(non_access_index == target_in_non_access){
+    //                         target = i;
+    //                         break;
+    //                     }
+    //                     non_access_index += 1;
+    //                 }
+    //             }
+    //             uint64_t tmp = ptr[pre_idx];
+    //             ptr[pre_idx] = ptr[target];
+    //             ptr[target] = tmp;
+    //             break;
+    //         }else{
+    //             access[pre_idx] = true;
+    //             pre_idx = ptr[pre_idx];
+    //         }
+    //     }
+    //     printf("cycle_size : %ld\n", cycle_size);
+    //     fflush(stdout);
+    // }
+    // free(access);
+    // printf("gen count : %ld\n", gen_count);
+    // fflush(stdout);
 }
 
 static void gen_sequential_list(uint64_t** ptr_p, uint64_t index_region){
@@ -510,6 +585,9 @@ uint64_t memory_test_kernel_ptrchase_multichain(
         DEFINE_CHAIN_13;
         DEFINE_CHAIN_14;
         DEFINE_CHAIN_15;
+
+        // for(int r = 0; r < 10; ++r){
+
         for(uint64_t i = 0; i < index_region; ++i){
             ACCESS_CHAIN_0;
             ACCESS_CHAIN_1;
@@ -528,11 +606,13 @@ uint64_t memory_test_kernel_ptrchase_multichain(
             ACCESS_CHAIN_14;
             ACCESS_CHAIN_15;
         }
-        
+
+        // }
+
         double time_start = dtime();
         uint64_t cycle_start = rdtsc();
 
-        for(int i = 0; i < repeat_count; i++){
+        for(int r = 0; r < repeat_count; r++){
             // RESET_CHAIN_0;
             // RESET_CHAIN_1;
             // RESET_CHAIN_2;
