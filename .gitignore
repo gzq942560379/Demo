@@ -1,4 +1,13 @@
 .vscode
+output.*
+*.stats
+*.err
+*.out
+*.dat
+gen_file
+parallel_read*
+mpishm
+test
 
 *.o
 *.a
