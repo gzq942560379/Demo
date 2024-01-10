@@ -8,6 +8,8 @@ gen_file
 parallel_read*
 mpishm
 test
+*.png
+*.bin
 
 *.o
 *.a
