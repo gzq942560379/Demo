@@ -1,19 +1,31 @@
 #pragma once
 #include <cstdio>
 #include <cstdlib>
-#include <omp.h>
 #include <complex>
 #include <exception>
 #include <cstring>
 #include <string>
 #include <iostream>
+
+#ifdef USE_CBLAS
 #include <cblas.h>
+#endif
+
+#ifdef __sw_64__
+#include <swhgemm.h>
+typedef double float64_t;
+typedef float float32_t;
+typedef short float16_t;
+#endif
+
 #include <cassert>
+#include <mpi.h>
 
 #ifdef __cplusplus
 extern "C"{
 #endif
 
+extern void sgemm_(char* transA, char* transB, int* m, int* n, int* k, float* alpha, const float* a, int* lda, const float* b, int* ldb, float* beta, float* c, int* ldc);
 extern void dgemm_(char* transA, char* transB, int* m, int* n, int* k, double* alpha, const double* a, int* lda, const double* b, int* ldb, double* beta, double* c, int* ldc);
 extern void zgemm_(char* transA, char* transB, int* m, int* n, int* k, std::complex<double>* alpha, const std::complex<double>* a, int* lda, const std::complex<double>* b, int* ldb, std::complex<double>* beta, std::complex<double>* c, int* ldc);
 
@@ -73,14 +85,19 @@ public:
     Matrix(int m, int n, int ld, Matrix::Layout layout = ColMajor):m_(m),n_(n),ld_(ld),layout_(layout){
         if(layout_ == ColMajor){
             assert(ld_ >= m_);
-            data_ = (T*)aligned_alloc(64, n_ * ld_ * sizeof(T));
+            data_ = (T*)libc_aligned_malloc(n_ * ld_ * sizeof(T));
+            // data_ = (T*)malloc(n_ * ld_ * sizeof(T));
+            // data_ = new T[n_ * ld_];
         }else{
             assert(ld_ >= n_);
-            data_ = (T*)aligned_alloc(64, m_ * ld_ * sizeof(T));
+            data_ = (T*)libc_aligned_malloc(m_ * ld_ * sizeof(T));
+            // data_ = (T*)malloc(m_ * ld_ * sizeof(T));
+            // data_ = new T[m_ * ld_];
         }
     }
     ~Matrix(){
-        free(data_);
+        // free(data_);
+        delete[] data_;
     }
 
     int m() const {return m_;};
@@ -117,20 +134,42 @@ inline void gemm<double>(char transA, char transB, double alpha, const Matrix<do
     assert(transA == 'N');
     assert(transB == 'N');
     assert(A.n() == B.m());
+#ifdef USE_CBLAS
     cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, A.m(), B.n(), A.n(), alpha, A.data(), A.ld(), B.data(), B.ld(), beta, C.data(), C.ld());
+#else
+    int m = A.m();
+    int n = B.n();
+    int k = A.n();
+    int lda = A.ld();
+    int ldb = B.ld();
+    int ldc = C.ld();
+    dgemm_(&transA, &transB, &m, &n, &k, &alpha, A.data(), &lda, B.data(), &ldb, &beta, C.data(), &ldc);
+#endif
 }
 
 template<>
-inline void gemm<__fp16>(char transA, char transB, __fp16 alpha, const Matrix<__fp16>& A, const Matrix<__fp16>& B, __fp16 beta, Matrix<__fp16>& C){
+inline void gemm<float>(char transA, char transB, float alpha, const Matrix<float>& A, const Matrix<float>& B, float beta, Matrix<float>& C){
     assert(transA == 'N');
     assert(transB == 'N');
     assert(A.n() == B.m());
-    fjcblas_gemm_r16(CblasColMajor, CblasNoTrans, CblasNoTrans, A.m(), B.n(), A.n(), alpha, A.data(), A.ld(), B.data(), B.ld(), beta, C.data(), C.ld());
+#ifdef USE_CBLAS
+    cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, A.m(), B.n(), A.n(), alpha, A.data(), A.ld(), B.data(), B.ld(), beta, C.data(), C.ld());
+#else
+    int m = A.m();
+    int n = B.n();
+    int k = A.n();
+    int lda = A.ld();
+    int ldb = B.ld();
+    int ldc = C.ld();
+    sgemm_(&transA, &transB, &m, &n, &k, &alpha, A.data(), &lda, B.data(), &ldb, &beta, C.data(), &ldc);
+#endif
 }
+
 
 
 template<typename T>
 void gemm_performance_test(int m, int n, int k){
+
     int M,N,K;
     int lda,ldb,ldc;
     T alpha, beta;
@@ -147,9 +186,9 @@ void gemm_performance_test(int m, int n, int k){
     Matrix<T> B(k, n, ldb);
     Matrix<T> C(m, n, ldc);
 
-    A.fill(1.);
-    B.fill(1.);
-    C.fill(1.);
+    A.fill(0);
+    B.fill(0);
+    C.fill(0);
 
     alpha=1.;
     beta=0.;
@@ -158,11 +197,11 @@ void gemm_performance_test(int m, int n, int k){
     // gemm( transA, transB, M, N, K, alpha, A, lda, B, ldb, beta, C, ldc );
     gemm(transA, transB, alpha, A, B, beta, C);
 
-    double timer_start = omp_get_wtime();
+    double timer_start = MPI_Wtime();
 
     gemm(transA, transB, alpha, A, B, beta, C);
     
-    double timer_end = omp_get_wtime();
+    double timer_end = MPI_Wtime();
 
     double time = timer_end - timer_start;
     double TFLOPs = 2. * M * N * K * 1e-12;
