@@ -263,12 +263,6 @@ void dmvm_test(
     dmvm_kernel_unroll2(row, col, A, lda, x, y, adapative_repeat_count, output_file);
 #elif defined(DMVM_TILING)
     dmvm_kernel_tiling(row, col, A, lda, x, y, adapative_repeat_count, output_file);
-#elif defined(DMVM_DATA_TRAFFIC_NAVIE)
-    dmvm_data_traffic_naive(row, col, output_file);
-#elif defined(DMVM_DATA_TRAFFIC_UNROLL2)
-    dmvm_data_traffic_unroll2(row, col, output_file);
-#elif defined(DMVM_DATA_TRAFFIC_TILING)
-    dmvm_data_traffic_tiling(row, col, output_file);
 #else
     fprintf(stderr, "no define test kernel !!!\n");
     fflush(stderr);

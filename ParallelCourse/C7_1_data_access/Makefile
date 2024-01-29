@@ -2,6 +2,7 @@
 include make.inc
 
 BIN_DIR = bin
+ASM_DIR = asm
 
 .PHONY: all memory traids dmvm dgemm two_scale 
 
@@ -14,7 +15,7 @@ MEM_TEST = mem mem_chain2 mem_chain4 mem_chain6 mem_chain8 mem_chain10 mem_chain
 
 TRAIDS_TEST = triads_naive triads_avx512 triads_avx512_nt triads_model
 
-DMVM_TEST = dmvm_naive dmvm_unroll2 dmvm_tiling dmvm_data_traffic_naive dmvm_data_traffic_unroll2 dmvm_data_traffic_tiling 
+DMVM_TEST = dmvm_naive dmvm_unroll2 dmvm_tiling   
 
 DGEMM_TEST = dgemm_naive dgemm_recursively_blocked
 
@@ -36,6 +37,7 @@ two_scale : $(TWO_SCALE_BIN)
 
 
 $(MEM_BIN) : % : mem.c mem.h util.h
+	$(CC) -S $(CFLAGS) -o $@.S $<
 	$(CC) $(CFLAGS) -o $@ $<
 
 $(TRAIDS_BIN) : % : triads.c util.h
@@ -79,9 +81,6 @@ $(BIN_DIR)/triads_model : override CFLAGS += -DVECTOR_TRIADS_MODEL
 $(BIN_DIR)/dmvm_naive : override CFLAGS += -DDMVM_NAIVE
 $(BIN_DIR)/dmvm_unroll2 : override CFLAGS += -DDMVM_UNROLL2
 $(BIN_DIR)/dmvm_tiling : override CFLAGS += -DDMVM_TILING
-$(BIN_DIR)/dmvm_data_traffic_naive : override CFLAGS += -DDMVM_DATA_TRAFFIC_NAIVE
-$(BIN_DIR)/dmvm_data_traffic_unroll2 : override CFLAGS += -DDMVM_DATA_TRAFFIC_UNROLL2
-$(BIN_DIR)/dmvm_data_traffic_tiling : override CFLAGS += -DDMVM_DATA_TRAFFIC_TILING
 
 $(BIN_DIR)/dgemm_naive : override CFLAGS += -DDGEMM_NAIVE $(PAPI_INC) $(PAPI_LIB)
 $(BIN_DIR)/dgemm_recursively_blocked : override CFLAGS += -DDGEMM_RECURSIVELY_BLOCKED $(PAPI_INC) $(PAPI_LIB)
