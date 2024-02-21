@@ -32,6 +32,10 @@ typedef struct {
     double to_bcast;
 } rma_demo_param_t;
 
+typedef struct {
+    float* value;
+} fp16_demo_param_t;
+
 #ifdef __cplusplus
 }
 #endif

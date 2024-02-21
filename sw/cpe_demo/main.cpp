@@ -2,6 +2,7 @@
 #include <mpi.h>
 #include <crts.h>
 #include <math.h>
+#include <cstdint>
 
 #include "slave_kernel.h"
 
@@ -150,6 +151,71 @@ void rma_demo_test(){
     }
 }
 
+void fp16_test(){
+    float value[64];
+    fp16_demo_param_t para;
+    para.value = value;
+    for(int i = 0; i < 64; ++i){
+        value[i] = i;
+    }
+
+    CRTS_athread_spawn(reinterpret_cast<void *>(SLAVE_FUN(fp16_demo)), &para);
+    CRTS_athread_join();
+
+    // printf("master : \n");
+    // for(int i = 0; i < 64; ++i){
+    //     printf("value[%d] : %f\n", i, value[i]);
+    // }
+}
+
+// belong 0 or 1
+// 0 - 31
+void get_simd_vshfh_mask(char belong[32], char id[32]){
+    int32_t maskbit[6] = {
+        0, 0, 0, 0, 0, 0
+    };
+    // 32个数
+    for(int i = 0; i < 32; ++i){
+        int32_t tmp = 0;
+        if(belong[i] == 0){
+            // do nothing
+        }else if(belong[i] == 1){
+            tmp |= 1 << 5;
+        }else{
+            assert(false);
+        }
+        assert(id[i] < 32);
+        tmp |= (id[i] & 0x1F);
+        assert(tmp < 64);
+
+        int start_bit = i * 6;
+        int end_bit = (i + 1) * 6 - 1;
+
+        int start_char = start_bit / 32;
+        int start_pos = start_bit % 32;
+        int end_char = end_bit / 32;
+        int end_pos = end_bit % 32;
+
+
+        if(start_char == end_char){
+            maskbit[start_char] |= (tmp << start_pos);
+        }else{
+            maskbit[start_char] |= (tmp << start_pos);
+            maskbit[end_char] |= ((tmp >> (6 - (end_pos + 1))) & ((1 << (end_pos + 1)) - 1));
+        }
+    }
+    
+    for(int i = 0; i < 6; ++i){
+        printf("%d", maskbit[i]);
+        if(i + 1 < 6){
+            printf(", ");
+        }
+    }
+    printf("\n");
+
+
+}
+
 int main(int argc, char** argv){
     MPI_Init(&argc, &argv);
 
@@ -161,7 +227,57 @@ int main(int argc, char** argv){
 
     // axpy_test();
 
-    rma_demo_test();
+    // rma_demo_test();
+
+
+    // char belong[32] = {
+    //     0, 0, 0, 0, 0, 0, 0, 0, 
+    //     1, 1, 1, 1, 1, 1, 1, 1, 
+    //     0, 0, 0, 0, 0, 0, 0, 0, 
+    //     1, 1, 1, 1, 1, 1, 1, 1, 
+    // };
+    // char id[32] = {
+    //     0, 4, 8, 12, 16, 20, 24, 28,
+    //     0, 4, 8, 12, 16, 20, 24, 28,
+    //     0, 4, 8, 12, 16, 20, 24, 28,
+    //     0, 4, 8, 12, 16, 20, 24, 28,
+    // };
+    // get_simd_vshfh_mask(belong, id);
+
+    // char belong[32] = {
+    //     0, 0, 0, 0, 0, 0, 0, 0, 
+    //     0, 0, 0, 0, 0, 0, 0, 0, 
+    //     1, 1, 1, 1, 1, 1, 1, 1, 
+    //     1, 1, 1, 1, 1, 1, 1, 1, 
+    // };
+    // char id[32] = {
+    //     0, 1, 2, 3, 4, 5, 6, 7,
+    //     8, 9, 10, 11, 12, 13, 14, 15,
+    //     0, 1, 2, 3, 4, 5, 6, 7,
+    //     8, 9, 10, 11, 12, 13, 14, 15,
+    // };
+    // get_simd_vshfh_mask(belong, id);
+
+    // char belong[32] = {
+    //     0, 0, 0, 0, 0, 0, 0, 0, 
+    //     0, 0, 0, 0, 0, 0, 0, 0, 
+    //     1, 1, 1, 1, 1, 1, 1, 1, 
+    //     1, 1, 1, 1, 1, 1, 1, 1, 
+    // };
+    // char id[32] = {
+    //     0, 8,  16, 24,
+    //     1, 9,  17, 25,
+    //     2, 10, 18, 26,
+    //     3, 11, 19, 27,
+    //     4, 12, 20, 28,
+    //     5, 13, 21, 29,
+    //     6, 14, 22, 30,
+    //     7, 15, 23, 31,
+    // };
+    // get_simd_vshfh_mask(belong, id);
+
+
+    fp16_test();
 
     MPI_Finalize();
     return 0;

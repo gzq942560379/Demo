@@ -16,5 +16,6 @@ $CC -c -mslave $CFLAGS -o ssync_demo.slave.o ./ssync_demo.slave.c
 $CC -c -mslave $CFLAGS -o axpy_naive.slave.o ./axpy_naive.slave.c
 $CC -c -mslave $CFLAGS -o ldm_info_demo.slave.o ./ldm_info_demo.slave.c
 $CC -c -mslave $CFLAGS -o rma_demo.slave.o ./rma_demo.slave.c
+$CC -c -mslave $CFLAGS -o fp16_demo.slave.o ./fp16_demo.slave.c
 
 $CXX -mhybrid -o main.bin *.o -lm -lm_slave

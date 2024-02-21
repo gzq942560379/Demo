@@ -213,3 +213,4 @@ void gemm_performance_test(int m, int n, int k){
     double memory = 1.0 * (M * N + M * K + K * N) * sizeof(T) /1024/1024/1024;
     printf("%8d,%8d,%8d,%12.4e,%12.4e,%12.4e,%12.4e,%12.2f%%\n",M,K,N,memory,time,TFLOPs,TFLOPS, peak);
 }
+
