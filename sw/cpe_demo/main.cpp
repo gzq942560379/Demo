@@ -223,7 +223,7 @@ int main(int argc, char** argv){
 
     // ssync_demo_test();
 
-    // ldm_info_demo_test();
+    ldm_info_demo_test();
 
     // axpy_test();
 
@@ -277,7 +277,10 @@ int main(int argc, char** argv){
     // get_simd_vshfh_mask(belong, id);
 
 
-    fp16_test();
+    // fp16_test();
+
+    double a = std::nan("1");
+    printf("%lf %d \n", a, std::isnan(a));
 
     MPI_Finalize();
     return 0;

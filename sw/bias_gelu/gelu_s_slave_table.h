@@ -1,10 +1,9 @@
 #pragma once
-#include <crts.h>
-__thread_local const double range_start = -3;
-__thread_local const double range_end = 3;
-__thread_local const double fit_split = 64;
+__thread_local const float range_start = -3;
+__thread_local const float range_end = 3;
+__thread_local const float fit_split = 64;
 __thread_local const int fit_order = 0;
-__thread_local const double fast_gelu_poly_table_double[385] __attribute__ ((aligned(64))) = {
+__thread_local const float fast_gelu_poly_table_float[385] __attribute__ ((aligned(64))) = {
     -3.728273e-03,
     -3.917147e-03,
     -4.114183e-03,

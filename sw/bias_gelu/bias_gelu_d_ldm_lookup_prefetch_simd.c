@@ -6,7 +6,7 @@
 
 #define MAX_BIAS 3200
 
-void bias_gelu_d_ldm_lookup_prefetch(bias_gelu_d_param_t *para_p){
+void bias_gelu_d_ldm_lookup_prefetch_simd(bias_gelu_d_param_t *para_p){
     double* input = para_p->input;
     const double* bias = para_p->bias;
     int64_t row = para_p->row;
@@ -30,6 +30,13 @@ void bias_gelu_d_ldm_lookup_prefetch(bias_gelu_d_param_t *para_p){
     crts_rply_t get_reply = 0;
     crts_rply_t put_reply = 0;
 
+    doublev8 vdata, vbias;
+    doublev8 vtmp0, vtmp1;
+
+    doublev8 vstart = simd_vcpyfd(range_start);
+    doublev8 vend = simd_vcpyfd(range_end);
+    doublev8 vsplit = simd_vcpyfd(fit_split);
+
     for(int64_t r = 0; r < row_len; ++r){
         int64_t cur = r & 1;
         int64_t next = (r + 1) & 1;
@@ -41,13 +48,22 @@ void bias_gelu_d_ldm_lookup_prefetch(bias_gelu_d_param_t *para_p){
         if(r + 1 < row_len){
             CRTS_dma_iget(row_ldm_next, input_row_next, col * sizeof(double), &get_reply);
         }
-        for(int64_t c = 0; c < col; ++c){
-            double x = row_ldm_cur[c] + bias_ldm[c];
-            x = slave_max(x, range_start);
-            x = slave_min(x, range_end);
-            uint64_t index = (uint64_t)((x - range_start) * fit_split);
-            double c0 = fast_gelu_poly_table_double[index];
-            row_ldm_cur[c] = c0;
+        for(int64_t c = 0; c < col; c += 8){
+            simd_load(vdata, row_ldm_cur + c);
+            simd_load(vbias, bias_ldm + c);
+            vdata = simd_vaddd(vdata, vbias);
+            vdata = simd_smaxd(vdata, vstart);
+            vdata = simd_smind(vdata, vend);
+            vtmp0 = simd_vsubd(vdata, vstart);
+            vtmp1 = simd_vmuld(vtmp0, vsplit);
+            row_ldm_cur[c +  0] = fast_gelu_poly_table_double[(uint64_t)simd_vextfd(vtmp1,  0)];
+            row_ldm_cur[c +  1] = fast_gelu_poly_table_double[(uint64_t)simd_vextfd(vtmp1,  1)];
+            row_ldm_cur[c +  2] = fast_gelu_poly_table_double[(uint64_t)simd_vextfd(vtmp1,  2)];
+            row_ldm_cur[c +  3] = fast_gelu_poly_table_double[(uint64_t)simd_vextfd(vtmp1,  3)];
+            row_ldm_cur[c +  4] = fast_gelu_poly_table_double[(uint64_t)simd_vextfd(vtmp1,  4)];
+            row_ldm_cur[c +  5] = fast_gelu_poly_table_double[(uint64_t)simd_vextfd(vtmp1,  5)];
+            row_ldm_cur[c +  6] = fast_gelu_poly_table_double[(uint64_t)simd_vextfd(vtmp1,  6)];
+            row_ldm_cur[c +  7] = fast_gelu_poly_table_double[(uint64_t)simd_vextfd(vtmp1,  7)];
         }
         CRTS_dma_iput(input_row_cur, row_ldm_cur, col * sizeof(double), &put_reply);
     }
