@@ -14,8 +14,6 @@ LIBA = $(LIB_DIR)/lib$(LIB_NAME).a
 
 all : lib example
 
-
-
 LIB_SRC_C = $(shell find $(SRC_DIR) -name *.c)
 LIB_SRC_CPP = $(shell find $(SRC_DIR) -name *.cpp)
 

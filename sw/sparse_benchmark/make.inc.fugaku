@@ -1,0 +1,14 @@
+
+DEF     =
+INC     =
+LIB     =
+
+CC      =   mpifcc
+CXX     =   mpiFCC
+AR      =   ar
+ARFLAGS =   cr
+RANLIB  =   ranlib
+
+CFLAGS      =   -O3 -g -fopenmp -std=c11 -fPIC $(DEF) $(INC)
+CXXFLAGS    =   -O3 -g -fopenmp -std=c++11 -fPIC $(DEF) $(INC)
+LINKFLAGS   =   -fopenmp $(LIB)
