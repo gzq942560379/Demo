@@ -703,6 +703,7 @@ uint64_t memory_test_kernel_ptrchase_multichain(
     double GBPS1 = 1.0 * thread_count * repeat_count * chains * index_region * sizeof(Node_t) / 1024./ 1024./ 1024./ avg_time;
     double GBPS2 = 64.0 / cycles * FREQUENCY_GHZ * 1e9 / 1024./1024./1024.;
 
+    printf("thread_count : %ld\n", thread_count);
     printf("avg_cycles : %ld\n", avg_cycles);
     printf("max_cycles : %ld\n", max_cycles);
     printf("min_cycles : %ld\n", min_cycles);
@@ -847,6 +848,7 @@ uint64_t memory_test_kernel_seqential_without_ptrchase(
     double GBPS1 = 1.0 * thread_count * repeat_count * index_region * CACHE_LINE_SIZE / 1024./1024./1024. / avg_time;
     double GBPS2 = 1.0 * CACHE_LINE_SIZE / cycles * FREQUENCY_GHZ * 1e9 / 1024./1024./1024.;
 
+    printf("thread_count : %ld\n", thread_count);
     printf("avg_cycles : %ld\n", avg_cycles);
     printf("max_cycles : %ld\n", max_cycles);
     printf("min_cycles : %ld\n", min_cycles);
@@ -976,6 +978,7 @@ uint64_t memory_test_kernel_random_without_ptrchase(
     double GBPS1 = 1.0 * thread_count * repeat_count * index_region * CACHE_LINE_SIZE / 1024./1024./1024. / avg_time;
     double GBPS2 = 1.0 * CACHE_LINE_SIZE / cycles * FREQUENCY_GHZ * 1e9 / 1024./1024./1024.;
 
+    printf("thread_count : %ld\n", thread_count);
     printf("avg_cycles : %ld\n", avg_cycles);
     printf("max_cycles : %ld\n", max_cycles);
     printf("min_cycles : %ld\n", min_cycles);

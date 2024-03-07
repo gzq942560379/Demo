@@ -14,9 +14,13 @@
 #include <sys/time.h>
 #include <immintrin.h>
 
-#define L1_CACHE_SIZE (48 * 1024)
-#define L2_CACHE_SIZE (1280 * 1024)
-#define L3_CACHE_SIZE (55296 * 1024)
+// #define L1_CACHE_SIZE (48 * 1024)
+// #define L2_CACHE_SIZE (1280 * 1024)
+// #define L3_CACHE_SIZE (55296 * 1024)
+
+#define L1_CACHE_SIZE (32 * 1024)
+#define L2_CACHE_SIZE (1024 * 1024)
+#define L3_CACHE_SIZE (22528 * 1024)
 
 #define min(x, y) ((x) < (y) ? (x) : (y))
 #define max(x, y) ((x) < (y) ? (y) : (x))

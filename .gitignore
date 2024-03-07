@@ -13,3 +13,6 @@ test
 
 *.o
 *.a
+*.S
+
+ParallelCourse/C7_1_data_access/bin/*

@@ -47,7 +47,7 @@ $(DMVM_BIN) : % : dmvm.c util.h
 	$(CC) $(CFLAGS) -o $@ $<
 
 $(DGEMM_BIN) : % : dgemm.c util.h
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $< $(PAPI_LIB)
 
 $(TWO_SCALE_BIN) : % : two_scale.c util.h
 	$(CC) $(CFLAGS) -o $@ $<
@@ -82,8 +82,8 @@ $(BIN_DIR)/dmvm_naive : override CFLAGS += -DDMVM_NAIVE
 $(BIN_DIR)/dmvm_unroll2 : override CFLAGS += -DDMVM_UNROLL2
 $(BIN_DIR)/dmvm_tiling : override CFLAGS += -DDMVM_TILING
 
-$(BIN_DIR)/dgemm_naive : override CFLAGS += -DDGEMM_NAIVE $(PAPI_INC) $(PAPI_LIB)
-$(BIN_DIR)/dgemm_recursively_blocked : override CFLAGS += -DDGEMM_RECURSIVELY_BLOCKED $(PAPI_INC) $(PAPI_LIB)
+$(BIN_DIR)/dgemm_naive : override CFLAGS += -DDGEMM_NAIVE $(PAPI_INC)
+$(BIN_DIR)/dgemm_recursively_blocked : override CFLAGS += -DDGEMM_RECURSIVELY_BLOCKED $(PAPI_INC)
 
 $(BIN_DIR)/two_scale_naive : override CFLAGS += -DTWO_SCALE_NAIVE
 $(BIN_DIR)/two_scale_fused : override CFLAGS += -DTWO_SCALE_FUSED

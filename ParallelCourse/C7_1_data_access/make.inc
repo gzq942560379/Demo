@@ -1,1 +1,1 @@
-./make.inc.icc
+./make.inc.example/make.inc.gcc

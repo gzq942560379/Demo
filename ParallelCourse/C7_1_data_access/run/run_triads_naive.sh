@@ -10,6 +10,6 @@ source ./env.sh
 
 ./build.sh
 
-export LATENCY_OUTPUT_FILENAME_PREFIX="triads_mflops_naive_g07"
+export LATENCY_OUTPUT_FILENAME_PREFIX="triads_mflops_naive"
 
 numactl -N 0 -m 0 ./bin/triads_naive

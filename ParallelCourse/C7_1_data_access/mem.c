@@ -45,7 +45,7 @@ int main(){
     uint64_t sample_points = env_get_uint64("SAMPLE_POINTS", 4);         
     uint64_t access_region_start = env_get_uint64("ACCESS_REGION_START", 256);  // bytes >= 256
     // uint64_t access_region_end = env_get_uint64("ACCESS_REGION_END", 256);  // bytes
-    uint64_t access_region_end = env_get_uint64("ACCESS_REGION_END", 1073741824);  // bytes
+    uint64_t access_region_end = env_get_uint64("ACCESS_REGION_END", 2147483648);  // bytes
     uint64_t prefetch_count = env_get_uint64("PREFETCH_COUNT", 0);  // bytes
     
     uint64_t access_count = env_get_uint64("ACCESS_COUNT", access_region_end * 2);  // data accessed larger than L3 cache size
