@@ -25,6 +25,7 @@ int main(int argc, char** argv){
     std::cout << "shmcomm_mpirank : " << shmcomm_mpirank << std::endl;
     std::cout << "shmcomm_mpisize : " << shmcomm_mpisize << std::endl;
 
+
     int* local_mem;
     int shared_element_cout;
 
@@ -35,7 +36,7 @@ int main(int argc, char** argv){
     }
 
     MPI_Win win;
-    MPI_Win_allocate_shared(shared_element_cout * sizeof(int), sizeof(int), MPI_INFO_NULL, shmcomm, &local_mem, &win);
+    MPI_Win_allocate_shared(shared_element_cout, sizeof(int), MPI_INFO_NULL, shmcomm, &local_mem, &win);
 
     int* share_mem;
 

@@ -9,7 +9,7 @@ int main(int argc, char** argv){
 
     double total_start = MPI_Wtime();
 
-    const int MAX_LEN = 32768;
+    const int MAX_LEN = 4;
     const int WARMUP = 10; 
     const int REPEAT = 100; 
 
