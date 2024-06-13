@@ -6,6 +6,8 @@
 
 #include "slave_kernel.h"
 
+
+
 void fill_random(double* input, int64_t len, double start, double end){
     double range_len = end - start;
     for(int64_t i = 0; i < len; ++i){
@@ -216,6 +218,20 @@ void get_simd_vshfh_mask(char belong[32], char id[32]){
 
 }
 
+void getPorcNodeMapping(){
+    int mpisize, mpirank;
+    MPI_Comm_size(MPI_COMM_WORLD, &mpisize);
+    MPI_Comm_rank(MPI_COMM_WORLD, &mpirank);
+    char hostname[16];
+    int error;
+    error = gethostname(hostname, sizeof(hostname));
+    std::string str(hostname);
+    std::cout << "error : " << error << std::endl;
+    std::cout << "hostname : " << hostname << std::endl;
+    std::cout << "hostname : " << str << std::endl;
+    std::cout << "str.size() : " << str.size() << std::endl;
+}
+
 int main(int argc, char** argv){
     MPI_Init(&argc, &argv);
 
@@ -223,7 +239,7 @@ int main(int argc, char** argv){
 
     // ssync_demo_test();
 
-    ldm_info_demo_test();
+    // ldm_info_demo_test();
 
     // axpy_test();
 
@@ -279,8 +295,7 @@ int main(int argc, char** argv){
 
     // fp16_test();
 
-    double a = std::nan("1");
-    printf("%lf %d \n", a, std::isnan(a));
+    getPorcNodeMapping();
 
     MPI_Finalize();
     return 0;

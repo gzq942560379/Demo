@@ -11,6 +11,10 @@ test
 *.png
 *.bin
 
+*.out.*
+
+swgomp-*
+
 *.o
 *.a
 *.S

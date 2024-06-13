@@ -18,6 +18,10 @@ typedef float float32_t;
 typedef short float16_t;
 #endif
 
+#define    HPL_PTR( ptr_, al_ ) \
+	( ( ( (size_t)(ptr_)+(al_)-1 ) / (al_) ) * (al_) )
+#define align   (32)
+
 #include <cassert>
 #include <mpi.h>
 
@@ -80,24 +84,26 @@ public:
     int n_;
     int ld_;
     Layout layout_;
+    T* data_unaligned_;
     T* data_;
 
     Matrix(int m, int n, int ld, Matrix::Layout layout = ColMajor):m_(m),n_(n),ld_(ld),layout_(layout){
         if(layout_ == ColMajor){
             assert(ld_ >= m_);
-            data_ = (T*)libc_aligned_malloc(n_ * ld_ * sizeof(T));
-            // data_ = (T*)malloc(n_ * ld_ * sizeof(T));
-            // data_ = new T[n_ * ld_];
+            // data_ = (T*)libc_aligned_malloc(n_ * ld_ * sizeof(T));
+            data_unaligned_ = (T*)malloc(n_ * ld_ * sizeof(T) + 128 * sizeof(T));
+            data_ = (T*)HPL_PTR(data_unaligned_, align*sizeof(T));
         }else{
             assert(ld_ >= n_);
-            data_ = (T*)libc_aligned_malloc(m_ * ld_ * sizeof(T));
-            // data_ = (T*)malloc(m_ * ld_ * sizeof(T));
-            // data_ = new T[m_ * ld_];
+            // data_ = (T*)libc_aligned_malloc(m_ * ld_ * sizeof(T));
+            data_unaligned_ = (T*)malloc(m_ * ld_ * sizeof(T) + 128 * sizeof(T));
+            data_ = (T*)HPL_PTR(data_unaligned_, align*sizeof(T));
         }
     }
     ~Matrix(){
-        // free(data_);
-        delete[] data_;
+        free(data_);
+        // delete[] data_;
+        // libc_aligned_free(data_);
     }
 
     int m() const {return m_;};

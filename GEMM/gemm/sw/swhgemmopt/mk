@@ -1,0 +1,13 @@
+set -x
+rm -rf *.o
+
+DEBUG="-DHALF -DVMAH -mieee -mftz -mslave-bf16 -g -O0"
+
+# sw9gcc -mhost -c $DEBUG main.c -static
+
+# sw9gcc -mhybrid main.o -L./ -lswhgemmopt -lm -lm_slave -static -o hgemm
+
+
+mpicc -mhost -c $DEBUG main.c -static
+
+mpicc -mhybrid main.o -L./ -lswhgemmopt -lm -lm_slave -static -o hgemm
